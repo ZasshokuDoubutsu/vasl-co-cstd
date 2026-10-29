@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "vasl_co 分层与单向依赖",
+    "locale": "zh-CN",
+    "output": "docs/architecture.html",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "app",
+      "type": "frontend",
+      "label": "L1 应用协程",
+      "sublabel": "examples/concurrency.c · 4 个任务",
+      "tag": "examples/",
+      "pos": [310, 40],
+      "size": [340, 76]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "L2 公开接口",
+      "sublabel": "inc/vasl_co.h · 协程宏 / 调度接口",
+      "tag": "inc/",
+      "pos": [310, 190],
+      "size": [340, 76]
+    },
+    {
+      "id": "scheduler",
+      "type": "backend",
+      "label": "L3 调度器",
+      "sublabel": "vasl_co.c · co_run / 优先级组",
+      "tag": "vasl_co.c",
+      "pos": [310, 340],
+      "size": [340, 76]
+    },
+    {
+      "id": "adapter",
+      "type": "backend",
+      "label": "L4 PT 适配层",
+      "sublabel": "inc/vasl_inc_pt.h · pri_pt_*",
+      "tag": "inc/",
+      "pos": [310, 490],
+      "size": [340, 76]
+    },
+    {
+      "id": "protothreads",
+      "type": "external",
+      "label": "L5 Protothreads 1.4",
+      "sublabel": "third_party/protothreads-1.4",
+      "tag": "third_party/",
+      "pos": [310, 640],
+      "size": [340, 76]
+    }
+  ],
+  "connections": [
+    { "id": "app-api", "from": "app", "to": "api", "label": "使用" },
+    { "id": "api-scheduler", "from": "api", "to": "scheduler", "label": "调度" },
+    { "id": "scheduler-adapter", "from": "scheduler", "to": "adapter", "label": "适配" },
+    { "id": "adapter-protothreads", "from": "adapter", "to": "protothreads", "label": "续点" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "单向原则",
+      "items": [
+        "上层只调用相邻下层，不反向依赖。",
+        "业务代码只使用 vasl_co API，不直接写 PT 宏。",
+        "Protothreads 只作为最底层的续点机制。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "边界说明",
+      "items": [
+        "配置宏在编译期生效，不属于运行时主依赖。",
+        "毫秒时基由平台提供，库只声明 vasl_get_tick_ms()。"
+      ]
+    }
+  ]
+}
